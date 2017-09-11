@@ -75,6 +75,7 @@ INFO = None
 
 QUERY_WHERE = 'where'
 QUERY_SORT = 'sort'
+QUERY_DISTINCT = 'distinct'
 QUERY_PAGE = 'page'
 QUERY_MAX_RESULTS = 'max_results'
 QUERY_EMBEDDED = 'embedded'

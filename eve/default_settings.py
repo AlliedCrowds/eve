@@ -151,6 +151,7 @@ ENFORCE_IF_MATCH = True         # ENFORCE_IF_MATCH enabled by default.
 ALLOWED_FILTERS = ['*']         # filtering enabled by default
 VALIDATE_FILTERS = False
 SORTING = True                  # sorting enabled by default.
+DISTINCT = True
 JSON_SORT_KEYS = False          # json key sorting
 EMBEDDING = True                # embedding enabled by default
 PROJECTION = True               # projection enabled by default
@@ -207,6 +208,7 @@ MEDIA_BASE_URL = None
 MULTIPART_FORM_FIELDS_AS_JSON = False
 AUTO_COLLAPSE_MULTI_KEYS = False
 AUTO_CREATE_LISTS = False
+JSON_REQUEST_CONTENT_TYPES = ['application/json']
 
 SCHEMA_ENDPOINT = None
 
@@ -220,6 +222,7 @@ BANDWIDTH_SAVER = True
 QUERY_WHERE = 'where'
 QUERY_PROJECTION = 'projection'
 QUERY_SORT = 'sort'
+QUERY_DISTINCT = 'distinct'
 QUERY_PAGE = 'page'
 QUERY_MAX_RESULTS = 'max_results'
 QUERY_EMBEDDED = 'embedded'
@@ -234,8 +237,9 @@ AUTH_FIELD = None
 # don't allow unknown key/value pairs for POST/PATCH payloads.
 ALLOW_UNKNOWN = False
 
-# don't ignore unknown schema rules (raise SchemaError)
-TRANSPARENT_SCHEMA_RULES = False
+# GeoJSON specs allows any number of key/value pairs
+# http://geojson.org/geojson-spec.html#geojson-objects
+ALLOW_CUSTOM_FIELDS_IN_GEOJSON = False
 
 # Rate limits are disabled by default. Needs a running redis-server.
 RATE_LIMIT_GET = None
@@ -243,9 +247,6 @@ RATE_LIMIT_POST = None
 RATE_LIMIT_PATCH = None
 RATE_LIMIT_DELETE = None
 
-# MONGO defaults
-MONGO_HOST = 'localhost'
-MONGO_PORT = 27017
 # disallow Mongo's javascript queries as they might be vulnerable to injection
 # attacks ('ReDoS' especially), are probably too complex for the average API
 # end-user and finally can  seriously impact overall performance.
@@ -254,7 +255,6 @@ MONGO_QUERY_BLACKLIST = ['$where', '$regex']
 # aknowledged writes). This is also the current PyMongo/Mongo default setting.
 MONGO_WRITE_CONCERN = {'w': 1}
 MONGO_OPTIONS = {
-    'connect': True
+    'connect': True,
+    'tz_aware': True,
 }
-# Compatibility for flask-pymongo.
-MONGO_CONNECT = MONGO_OPTIONS['connect']

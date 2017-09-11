@@ -37,6 +37,13 @@ class TestUtils(TestBase):
         with self.app.test_request_context('/?sort=hello'):
             self.assertEqual(parse_request(self.known_resource).sort, 'hello')
 
+    def test_parse_request_distinct(self):
+        with self.app.test_request_context():
+            self.assertEqual(parse_request(self.known_resource).distinct, None)
+        with self.app.test_request_context('/?distinct=hello'):
+            self.assertEqual(parse_request(self.known_resource).distinct,
+                             'hello')
+
     def test_parse_request_page(self):
         with self.app.test_request_context():
             self.assertEqual(parse_request(self.known_resource).page, 1)
@@ -159,9 +166,12 @@ class TestUtils(TestBase):
         self.assertEqual(querydef(page=10), '?page=10')
         self.assertEqual(querydef(where='wherepart'), '?where=wherepart')
         self.assertEqual(querydef(sort='sortpart'), '?sort=sortpart')
-
+        self.assertEqual(querydef(distinct='distinctpart'),
+                         '?distinct=distinctpart')
         self.assertEqual(querydef(where='wherepart', sort='sortpart'),
                          '?where=wherepart&sort=sortpart')
+        self.assertEqual(querydef(where='wherepart', distinct='distinctpart'),
+                         '?where=wherepart&distinct=distinctpart')
         self.assertEqual(querydef(max_results=10, sort='sortpart'),
                          '?max_results=10&sort=sortpart')
 

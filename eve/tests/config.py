@@ -75,6 +75,7 @@ class TestConfig(TestBase):
         self.assertEqual(self.app.config['QUERY_WHERE'], 'where')
         self.assertEqual(self.app.config['QUERY_PROJECTION'], 'projection')
         self.assertEqual(self.app.config['QUERY_SORT'], 'sort')
+        self.assertEqual(self.app.config['QUERY_DISTINCT'], 'distinct')
         self.assertEqual(self.app.config['QUERY_PAGE'], 'page')
         self.assertEqual(self.app.config['QUERY_MAX_RESULTS'], 'max_results')
         self.assertEqual(self.app.config['QUERY_EMBEDDED'], 'embedded')
@@ -259,6 +260,7 @@ class TestConfig(TestBase):
         self.assertEqual(settings['soft_delete'],
                          self.app.config['SOFT_DELETE'])
         self.assertEqual(settings['sorting'], self.app.config['SORTING'])
+        self.assertEqual(settings['distinct'], self.app.config['DISTINCT'])
         self.assertEqual(settings['embedding'], self.app.config['EMBEDDING'])
         self.assertEqual(settings['pagination'], self.app.config['PAGINATION'])
         self.assertEqual(settings['auth_field'],
