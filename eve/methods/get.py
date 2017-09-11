@@ -173,6 +173,8 @@ def _perform_find(resource, lookup):
     response = {}
     etag = None
     req = parse_request(resource)
+    getattr(app, "on_fetch_resource")(resource, req, lookup)
+    getattr(app, "on_fetch_resource_%s" % resource)(req, lookup)
     embedded_fields = resolve_embedded_fields(resource, req)
 
     # continue processing the full request
@@ -298,6 +300,9 @@ def getitem_internal(resource, **lookup):
        Superflous ``response`` container removed. Links wrapped with
        ``_links``. Links are now properly JSON formatted.
     """
+    getattr(app, "on_fetch_item")(resource)
+    getattr(app, "on_fetch_item_%s" % resource)
+
     req = parse_request(resource)
     resource_def = config.DOMAIN[resource]
     embedded_fields = resolve_embedded_fields(resource, req)
