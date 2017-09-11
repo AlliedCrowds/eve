@@ -459,6 +459,52 @@ class TestGet(TestBase):
         response, _ = self.get(self.known_resource)
         self.assertEqual(response['_items'][0]['prog'], 0)
 
+    def test_get_distinct(self):
+        distinct = 'role'
+        response, status = self.get(self.known_resource, '?distinct=%s'
+                                    % distinct)
+        self.assert200(status)
+
+        resource = response['_items']
+        self.assertEqual(len(resource), 2)
+
+    def test_get_custom_distinct(self):
+        self.app.config['QUERY_DISTINCT'] = 'unique'
+        distinct = 'role'
+        response, status = self.get(self.known_resource, '?unique=%s'
+                                    % distinct)
+        self.assert200(status)
+
+        resource = response['_items']
+        self.assertEqual(len(resource), 2)
+
+    def test_get_distinct_disabled(self):
+        self.app.config['DOMAIN'][self.known_resource]['distinct'] = False
+        distinct = 'distinct'
+        response, status = self.get(self.known_resource, '?distinct=%s' % distinct)
+        self.assert200(status)
+        resource = response['_items']
+        self.assertEqual(len(resource), 2)
+
+        # this might actually fail on very rare occurences as mongodb
+        # 'natural' order is not granted to return documents in insertion order
+        self.assertEqual(resource[0]['prog'], 0)
+
+    def test_get_default_distinct(self):
+        s = self.app.config['DOMAIN'][self.known_resource]['datasource']
+
+        # set default sort to 'prog', desc.
+        s['default_distinct'] = ['role']
+        self.app.set_defaults()
+        response, _ = self.get(self.known_resource)
+        self.assertEqual(response['_items'][0]['distinct'], 2)
+
+        # set default sort to 'prog', asc.
+        s['default_sort'] = [('distinct', 1)]
+        self.app.set_defaults()
+        response, _ = self.get(self.known_resource)
+        self.assertEqual(response['_items'][0]['prog'], 0)
+
     def test_cache_control(self):
         self.assertCacheControl(self.known_resource_url)
 
