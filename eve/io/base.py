@@ -338,12 +338,13 @@ class DataLayer(object):
         source = copy(dsource['source'])
         filter_ = copy(dsource['filter'])
         sort = copy(dsource['default_sort'])
+        distinct = copy(dsource['distinct'])
         projection = copy(dsource['projection'])
 
-        return source, filter_, projection, sort,
+        return source, filter_, projection, sort, distinct
 
     def _datasource_ex(self, resource, query=None, client_projection=None,
-                       client_sort=None):
+                       client_sort=None, distinct=None):
         """ Returns both db collection and exact query (base filter included)
         to which an API resource refers to.
 
@@ -391,7 +392,7 @@ class DataLayer(object):
         .. versionadded:: 0.0.4
         """
 
-        datasource, filter_, projection_, sort_ = self.datasource(resource)
+        datasource, filter_, projection_, sort_, distinct_ = self.datasource(resource)
 
         if client_sort:
             sort = client_sort
@@ -400,6 +401,15 @@ class DataLayer(object):
             # resource.
             # TODO Consider raising a validation error on startup instead?
             sort = sort_ if sort_ and config.DOMAIN[resource]['sorting'] else \
+                None
+
+        if distinct:
+            distinct = distinct
+        else:
+            # default distinct is activated only if 'distinct' is enabled for the
+            # resource.
+            # TODO Consider raising a validation error on startup instead?
+            distinct = distinct_ if distinct_ and config.DOMAIN[resource]['distinct'] else \
                 None
 
         if filter_:
@@ -474,7 +484,7 @@ class DataLayer(object):
                         )
                 else:
                     query = {auth_field: request_auth_value}
-        return datasource, query, fields, sort
+        return datasource, query, fields, sort, distinct
 
     def _client_projection(self, req):
         """ Returns a properly parsed client projection if available.

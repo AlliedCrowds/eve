@@ -631,6 +631,7 @@ class Eve(Flask, Events):
         ds.setdefault('source', resource)
         ds.setdefault('filter', None)
         ds.setdefault('default_sort', None)
+        ds.setdefault('distinct', None)
 
         self._set_resource_projection(ds, schema, settings)
 
