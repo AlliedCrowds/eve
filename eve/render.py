@@ -31,7 +31,9 @@ except ImportError:
 _MIME_TYPES = [
     {'mime': ('application/json',), 'renderer': 'render_json', 'tag': 'JSON'},
     {'mime': ('application/xml', 'text/xml', 'application/x-xml',),
-     'renderer': 'render_xml', 'tag': 'XML'}]
+     'renderer': 'render_xml', 'tag': 'XML'},
+    {'mime': ('text/html',), 'renderer': 'render_html', 'tag': 'HTML'}
+     ]
 
 
 def raise_event(f):
@@ -273,7 +275,6 @@ def _best_mime():
             for mime_type in mime['mime']:
                 supported.append(mime_type)
                 renders[mime_type] = mime['renderer']
-
     if len(supported) == 0:
         abort(500, description=debug_error_message(
             'Configuration error: no supported mime types')
@@ -478,3 +479,65 @@ def xml_dict(data):
             else:
                 xml += "<%s>%s</%s>" % (k, utils.escape(value), k)
     return xml
+
+def html_render_header(data):
+        html = "<thead><tr>"
+        for key in data.keys():
+            if key in ['_links', '_etag']:
+                continue
+            html += "<th>%s</th>" % (utils.escape(key))
+        html += "</tr></thead>"
+        return html
+
+def html_render_item(data):
+    html = "<tr>"
+    for key, value in data.items():
+        if key in ['_links', '_meta', '_etag']:
+            continue
+        if isinstance(value, datetime.datetime):
+            value = date_to_str(value)
+        elif isinstance(value, (datetime.time, datetime.date)):
+            value = value.isoformat()
+        if isinstance(value, list):
+            for index, val in enumerate(value):
+                if isinstance(val, dict):
+                    for k, v in val.items():
+                        if k != "id":
+                            value[index] = v
+        html += "<td>%s</td>" % (utils.escape(value))
+    html += "<tr>"
+    return html
+
+def render_html(data):
+    """ HTML render function.
+
+    :param data: the data stream to be rendered as html.
+    """
+    if isinstance(data, list):
+        data = {config.ITEMS: data}
+
+    html = "<div><table>"
+    if data:
+        ordered_items = OrderedDict(sorted(data.items()))
+        for k, v in ordered_items.items():
+            if k == "_items":
+                html += html_render_header(v[0])
+                html += "<tbody>"
+                for item in v:
+                    html += html_render_item(item)
+                html += "</tbody>"
+                return html
+            elif k == "_error":
+                html += html_render_header(v)
+                html += "<tbody>"
+                html += html_render_item(v)
+                html += "</tbody>"
+                return html
+        else:
+            html += html_render_header(ordered_items)
+            html += "<tbody>"
+            html += html_render_item(ordered_items)
+            html += "</tbody>"
+            return html
+    html += '</div></table>'
+    return html

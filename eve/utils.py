@@ -63,6 +63,9 @@ class ParsedRequest(object):
     # `projection` value of the query string (?projection). Defaults to None.
     projection = None
 
+    # `distinct` value of the query string (?distinct). Defaults to None.
+    distinct = None
+
     # `sort` value of the query string (?sort). Defaults to None.
     sort = None
 
@@ -135,6 +138,8 @@ def parse_request(resource):
         r.embedded = args.get(config.QUERY_EMBEDDED)
     if settings['datasource']['aggregation']:
         r.aggregation = args.get(config.QUERY_AGGREGATION)
+    if True:
+        r.distinct = args.get(config.QUERY_DISTINCT)
 
     r.show_deleted = config.SHOW_DELETED_PARAM in args
 
@@ -258,13 +263,14 @@ def api_prefix(url_prefix=None, api_version=None):
 
 
 def querydef(max_results=config.PAGINATION_DEFAULT, where=None, sort=None,
-             version=None, page=None, other_params=MultiDict()):
+             distinct=None, version=None, page=None, other_params=MultiDict()):
     """ Returns a valid query string.
 
     :param max_results: `max_result` part of the query string. Defaults to
                         `PAGINATION_DEFAULT`
     :param where: `where` part of the query string. Defaults to None.
     :param sort: `sort` part of the query string. Defaults to None.
+    :param distinct: `distinct` part of the query string. Defaults to None.
     :param page: `version` part of the query string. Defaults to None.
     :param page: `page` part of the query string. Defaults to None.
     :param other_params: dictionary of parameters that are not used
@@ -276,6 +282,7 @@ def querydef(max_results=config.PAGINATION_DEFAULT, where=None, sort=None,
     """
     where_part = '&%s=%s' % (config.QUERY_WHERE, where) if where else ''
     sort_part = '&%s=%s' % (config.QUERY_SORT, sort) if sort else ''
+    distinct_part = '&%s=%s' % (config.QUERY_DISTINCT, distinct) if distinct else ''
     page_part = '&%s=%s' % (config.QUERY_PAGE, page) if page and page > 1 \
         else ''
     version_part = '&%s=%s' % (config.VERSION_PARAM, version) if version \
@@ -291,7 +298,8 @@ def querydef(max_results=config.PAGINATION_DEFAULT, where=None, sort=None,
             if sort != '[("%s", 1)]' % config.VERSION else ''
 
     return ('?' + ''.join([max_results_part, where_part, sort_part,
-                           version_part, page_part, other_params_part])
+                           distinct_part, version_part, page_part,
+                           other_params_part])
             .lstrip('&')).rstrip('?')
 
 

@@ -220,6 +220,7 @@ BANDWIDTH_SAVER = True
 QUERY_WHERE = 'where'
 QUERY_PROJECTION = 'projection'
 QUERY_SORT = 'sort'
+QUERY_DISTINCT = 'distinct'
 QUERY_PAGE = 'page'
 QUERY_MAX_RESULTS = 'max_results'
 QUERY_EMBEDDED = 'embedded'

@@ -173,6 +173,8 @@ def _perform_find(resource, lookup):
     response = {}
     etag = None
     req = parse_request(resource)
+    getattr(app, "on_fetch_resource")(resource, req, lookup)
+    getattr(app, "on_fetch_resource_%s" % resource)(req, lookup)
     embedded_fields = resolve_embedded_fields(resource, req)
 
     # continue processing the full request
@@ -182,6 +184,7 @@ def _perform_find(resource, lookup):
     req.if_modified_since = None
 
     cursor = app.data.find(resource, req, lookup)
+
     # If soft delete is enabled, data.find will not include items marked
     # deleted unless req.show_deleted is True
     for document in cursor:
@@ -298,6 +301,9 @@ def getitem_internal(resource, **lookup):
        Superflous ``response`` container removed. Links wrapped with
        ``_links``. Links are now properly JSON formatted.
     """
+    getattr(app, "on_fetch_item")(resource)
+    getattr(app, "on_fetch_item_%s" % resource)
+
     req = parse_request(resource)
     resource_def = config.DOMAIN[resource]
     embedded_fields = resolve_embedded_fields(resource, req)
@@ -495,8 +501,8 @@ def _pagination_links(resource, req, document_count, document_id=None):
 
     other_params = _other_params(req.args)
     # construct the default links
-    q = querydef(req.max_results, req.where, req.sort, version, req.page,
-                 other_params)
+    q = querydef(req.max_results, req.where, req.sort, req.distinct,
+                 version, req.page, other_params)
     resource_title = config.DOMAIN[resource]['resource_title']
     _links = {'parent': home_link(),
               'self': {'title': resource_title,
@@ -532,22 +538,22 @@ def _pagination_links(resource, req, document_count, document_id=None):
 
         if (req.page * req.max_results < (document_count or 0) or
                 config.OPTIMIZE_PAGINATION_FOR_SPEED):
-            q = querydef(req.max_results, req.where, req.sort, version,
-                         req.page + 1, other_params)
+            q = querydef(req.max_results, req.where, req.sort, req. distinct,
+                         version, req.page + 1, other_params)
             _links['next'] = {'title': 'next page', 'href': '%s%s' %
                               (_pagination_link, q)}
 
             if document_count:
                 last_page = int(math.ceil(document_count / float(
                     req.max_results)))
-                q = querydef(req.max_results, req.where, req.sort, version,
-                             last_page, other_params)
+                q = querydef(req.max_results, req.where, req.sort, req.distinct,
+                             version,last_page, other_params)
                 _links['last'] = {'title': 'last page', 'href': '%s%s' % (
                     _pagination_link, q)}
 
         if req.page > 1:
-            q = querydef(req.max_results, req.where, req.sort, version,
-                         req.page - 1, other_params)
+            q = querydef(req.max_results, req.where, req.sort, req.distinct,
+                         version, req.page - 1, other_params)
             _links['prev'] = {'title': 'previous page', 'href': '%s%s' %
                               (_pagination_link, q)}
 
