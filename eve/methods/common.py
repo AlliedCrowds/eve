@@ -12,6 +12,7 @@
 import base64
 import simplejson as json
 import time
+import decimal
 
 from bson.dbref import DBRef
 from bson.errors import InvalidId
@@ -1126,7 +1127,7 @@ def oplog_push(resource, document, op, id=None):
     """
     if not config.OPLOG \
             or op not in config.OPLOG_METHODS\
-            or resource in config.URLS[resource]:
+            or resource not in config.URLS[resource]:
         return
 
     resource_def = config.DOMAIN[resource]
@@ -1161,10 +1162,17 @@ def oplog_push(resource, document, op, id=None):
             if op in config.OPLOG_CHANGE_METHODS:
                 # these fields are already contained in 'entry'.
                 del(update[config.LAST_UPDATED])
+                if config.DATE_CREATED in update:
+                    del(update[config.DATE_CREATED])
                 # legacy documents (v0.4 or less) could be missing the etag
                 # field
                 if config.ETAG in update:
                     del(update[config.ETAG])
+
+                for key,item in update.items():
+                    if type(item) == decimal.Decimal:
+                        update[key] = str(item)
+
                 entry['c'] = update
             else:
                 pass
